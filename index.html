@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Our Memory Lane</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f0f4f8, #e6e9f0);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #333;
+        }
+        .container {
+            max-width: 1000px;
+            width: 100%;
+            background: white;
+            border-radius: 2rem;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+            transition: all 0.3s ease-in-out;
+            min-height: 90vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .scrollable-content {
+            max-height: 60vh;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: #f9a8d4 #f1f1f1;
+        }
+        .scrollable-content::-webkit-scrollbar {
+            width: 8px;
+        }
+        .scrollable-content::-webkit-scrollbar-thumb {
+            background-color: #f9a8d4;
+            border-radius: 4px;
+        }
+        .scrollable-content::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        .timeline-item {
+            border-left: 3px solid #f9a8d4;
+            padding-left: 1.5rem;
+            position: relative;
+            margin-bottom: 2.5rem;
+        }
+        .timeline-item:last-child {
+            margin-bottom: 0;
+        }
+        .timeline-item-dot {
+            position: absolute;
+            left: -10px;
+            top: 0;
+            width: 20px;
+            height: 20px;
+            background-color: #f9a8d4;
+            border-radius: 50%;
+            border: 3px solid white;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 100;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            padding: 1rem;
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 10% auto;
+            padding: 2.5rem;
+            border-radius: 1.5rem;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            animation: slideIn 0.3s ease-out;
+        }
+        @keyframes slideIn {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        .love-quote {
+            font-family: 'Georgia', serif;
+            font-style: italic;
+            border-left: 4px solid #f9a8d4;
+            padding-left: 1rem;
+        }
+        .milestone-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.75rem 1rem;
+            background: #f3e8ff;
+            border-radius: 0.75rem;
+            margin-bottom: 0.5rem;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+        .milestone-item:hover {
+            background: #e9d5ff;
+        }
+        .milestone-item.completed {
+            background: #d8b4fe;
+            color: #5b21b6;
+        }
+        .milestone-item.custom {
+            background: #fff;
+            border: 1px dashed #a78bfa;
+        }
+    </style>
+</head>
+<body class="p-4">
+
+    <!-- Home Screen -->
+    <div id="home-screen" class="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-pink-100 to-purple-100 text-center transition-opacity duration-500">
+        <h1 class="text-5xl font-extrabold text-purple-700">Welcome Baby💋</h1>
+        <p id="daily-greeting" class="text-2xl font-semibold text-pink-500 mt-4 mb-8">Loading...</p>
+        <button id="start-journey-btn" class="bg-purple-500 text-white py-3 px-8 rounded-full text-lg font-bold shadow-lg hover:bg-purple-600 transition-colors">
+            Shuru karein Safar!
+        </button>
+    </div>
+
+    <!-- Main App Container -->
+    <div id="app" class="container hidden">
+        <div class="flex flex-col md:flex-row gap-8 flex-grow">
+            <!-- Left Side: Timeline, Milestones & Quotes -->
+            <div class="md:w-1/2 p-6 bg-pink-50/50 rounded-xl shadow-inner flex flex-col">
+                <h1 class="text-3xl font-bold text-center text-pink-500 mb-2">Hamari Yaadon Ki Gali</h1>
+                <p class="text-center text-gray-500 mb-6">User ID: <span id="user-id" class="font-mono text-xs text-gray-400">Loading...</span></p>
+
+                <div class="flex items-center justify-center mb-4 text-center">
+                    <p id="couple-info" class="text-sm text-purple-600 font-semibold bg-purple-100 px-3 py-1 rounded-full shadow-sm">
+                        Loading Couple Info...
+                    </p>
+                    <button id="manage-couple-btn" class="ml-2 text-purple-500 hover:text-purple-700 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.932Z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M18 10.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0ZM15 15.75h.008v.008H15v-.008Zm12.75-9.75v10.5a2.25 2.25 0 0 1-2.25 2.25H5.25A2.25 2.25 0 0 1 3 18.75V8.25m12 10.5v1.5a2.25 2.25 0 0 1-2.25 2.25H5.25a2.25 2.25 0 0 1-2.25-2.25V8.25m21.75-3.75a2.25 2.25 0 0 0-2.25-2.25H15.75a2.25 2.25 0 0 0-2.25 2.25v7.5a2.25 2.25 0 0 0 2.25 2.25h1.5a.75.75 0 0 0 .75-.75V8.25a2.25 2.25 0 0 0-2.25-2.25h-7.5" />
+                        </svg>
+                    </button>
+                </div>
+
+                <h2 class="text-2xl font-semibold mb-4 text-pink-400">Couple Timeline</h2>
+                <div id="timeline" class="scrollable-content pr-2 flex-grow">
+                    <!-- Memories will be injected here -->
+                    <p id="timeline-placeholder" class="text-center text-gray-400 mt-8">Koi memories nahi hain. Ek nayi yaad banaye!</p>
+                </div>
+                
+                <hr class="my-6 border-pink-200">
+                
+                <h2 class="text-2xl font-semibold mb-4 text-pink-400">Pyaar ke Milestones</h2>
+                <form id="add-milestone-form" class="space-y-2 mb-4">
+                    <input type="text" id="milestone-text" placeholder="Apna milestone likhe..." class="block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-300 focus:ring focus:ring-purple-200 focus:ring-opacity-50 transition-colors p-2">
+                    <button type="submit" class="w-full py-2 px-4 border border-transparent rounded-full shadow-sm text-sm font-medium text-white bg-purple-500 hover:bg-purple-600 transition-colors">
+                        Naya Milestone jodein
+                    </button>
+                </form>
+                <div id="milestone-list" class="scrollable-content pr-2">
+                     <p id="milestones-placeholder" class="text-center text-gray-400 mt-8">Koi milestones nahi hain.</p>
+                </div>
+
+                <hr class="my-6 border-pink-200">
+
+                <h2 class="text-2xl font-semibold text-pink-400 mb-4">Aaj Ka Quote</h2>
+                <div id="daily-quote" class="bg-pink-100 p-4 rounded-xl love-quote text-gray-700">
+                    "Pyar woh hai jab dusre ki khushi tumhari khushi ban jaati hai💓."
+                </div>
+
+                <div class="mt-4">
+                    <h2 class="text-xl font-semibold mb-2 text-pink-400">Location Status</h2>
+                    <p id="live-location" class="text-sm text-gray-600">
+                        <span class="font-semibold">Simulated Location:</span> Delhi, India
+                    </p>
+                    <button id="update-location-btn" class="mt-2 text-xs text-purple-500 hover:text-purple-700 transition-colors">
+                        Simulated Location Update karein
+                    </button>
+                    <p class="text-xs text-gray-400 mt-2">
+                        Note: Live location sharing is not supported in web apps. This is a mock feature.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Right Side: Add Memory & Dates -->
+            <div class="md:w-1/2 p-6 bg-purple-50/50 rounded-xl shadow-inner flex flex-col">
+                <h2 class="text-2xl font-semibold mb-4 text-purple-400">Add New Memory Chhota Don💋</h2>
+                <form id="add-memory-form" class="space-y-4">
+                    <div>
+                        <label for="memory-title" class="block text-sm font-medium text-gray-700">Title</label>
+                        <input type="text" id="memory-title" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-300 focus:ring focus:ring-purple-200 focus:ring-opacity-50 transition-colors p-2">
+                    </div>
+                    <div>
+                        <label for="memory-date" class="block text-sm font-medium text-gray-700">Date</label>
+                        <input type="date" id="memory-date" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-300 focus:ring focus:ring-purple-200 focus:ring-opacity-50 transition-colors p-2">
+                    </div>
+                    <div>
+                        <label for="memory-notes" class="block text-sm font-medium text-gray-700">Notes / Daily Journal</label>
+                        <textarea id="memory-notes" rows="4" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-300 focus:ring focus:ring-purple-200 focus:ring-opacity-50 transition-colors p-2"></textarea>
+                    </div>
+                    <div>
+                        <label for="memory-location" class="block text-sm font-medium text-gray-700">Location</label>
+                        <input type="text" id="memory-location" placeholder="Ex: First date restaurant" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-300 focus:ring focus:ring-purple-200 focus:ring-opacity-50 transition-colors p-2">
+                    </div>
+                    <button type="submit" class="w-full flex justify-center items-center py-2 px-4 border border-transparent rounded-full shadow-sm text-sm font-medium text-white bg-purple-500 hover:bg-purple-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-colors">
+                        Add Memory
+                    </button>
+                </form>
+
+                <hr class="my-6 border-purple-200">
+
+                <h2 class="text-2xl font-semibold mb-4 text-purple-400">Special Dates & Reminders</h2>
+                <form id="add-date-form" class="space-y-4">
+                    <div>
+                        <label for="date-title" class="block text-sm font-medium text-gray-700">Event Title</label>
+                        <input type="text" id="date-title" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-300 focus:ring focus:ring-purple-200 focus:ring-opacity-50 transition-colors p-2">
+                    </div>
+                    <div>
+                        <label for="date-date" class="block text-sm font-medium text-gray-700">Date</label>
+                        <input type="date" id="date-date" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-300 focus:ring focus:ring-purple-200 focus:ring-opacity-50 transition-colors p-2">
+                    </div>
+                    <button type="submit" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-full shadow-sm text-sm font-medium text-white bg-purple-500 hover:bg-purple-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-colors">
+                        Add Special Date
+                    </button>
+                </form>
+                <ul id="special-dates" class="list-disc pl-5 scrollable-content pr-2 mt-4">
+                    <!-- Special dates will be injected here -->
+                    <p id="dates-placeholder" class="text-center text-gray-400 mt-8">Koi special dates nahi hain. Ek nayi date add karein!</p>
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Couple Management Modal -->
+    <div id="couple-modal" class="modal">
+        <div class="modal-content">
+            <h2 class="text-2xl font-bold mb-4 text-purple-700">Apne Partner ke saath judiye</h2>
+            <p class="text-gray-600 mb-6">Apna Couple ID banaein ya daalein.</p>
+            <div class="flex flex-col space-y-4">
+                <button id="create-couple-btn" class="w-full py-3 px-6 rounded-full text-lg font-bold text-white bg-pink-500 hover:bg-pink-600 transition-colors shadow-lg">
+                    Naya Couple ID banayein
+                </button>
+                <div class="flex items-center text-gray-400">
+                    <span class="flex-grow border-t border-gray-300"></span>
+                    <span class="mx-4 text-sm">YA</span>
+                    <span class="flex-grow border-t border-gray-300"></span>
+                </div>
+                <div>
+                    <input type="text" id="couple-id-input" placeholder="Maujooda Couple ID daalein" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-300 focus:ring focus:ring-purple-200 focus:ring-opacity-50 transition-colors p-3">
+                    <button id="join-couple-btn" class="mt-4 w-full py-3 px-6 rounded-full text-lg font-bold text-white bg-purple-500 hover:bg-purple-600 transition-colors shadow-lg">
+                        Couple ID se judein
+                    </button>
+                    <p id="modal-error" class="text-red-500 text-sm mt-2 hidden">Couple ID galat hai.</p>
+                </div>
+                <button id="close-modal-btn" class="mt-4 text-gray-500 hover:text-gray-700">Band karein</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDKs -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, query, onSnapshot, addDoc, doc, setDoc, getDoc, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        
+        // Firebase Global Variables (Provided by Canvas Environment)
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+        // Firebase Initialization
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        
+        let userId = null;
+        let coupleId = null;
+
+        // UI elements
+        const homeScreen = document.getElementById('home-screen');
+        const mainApp = document.getElementById('app');
+        const startJourneyBtn = document.getElementById('start-journey-btn');
+        const dailyGreetingEl = document.getElementById('daily-greeting');
+        const userIdDisplay = document.getElementById('user-id');
+        const coupleInfoEl = document.getElementById('couple-info');
+        const manageCoupleBtn = document.getElementById('manage-couple-btn');
+        const addMemoryForm = document.getElementById('add-memory-form');
+        const addDateForm = document.getElementById('add-date-form');
+        const timelineEl = document.getElementById('timeline');
+        const specialDatesEl = document.getElementById('special-dates');
+        const timelinePlaceholder = document.getElementById('timeline-placeholder');
+        const datesPlaceholder = document.getElementById('dates-placeholder');
+        const dailyQuoteEl = document.getElementById('daily-quote');
+        const updateLocationBtn = document.getElementById('update-location-btn');
+        const liveLocationEl = document.getElementById('live-location');
+        const milestoneList = document.getElementById('milestone-list');
+        const milestonesPlaceholder = document.getElementById('milestones-placeholder');
+        const addMilestoneForm = document.getElementById('add-milestone-form');
+        const milestoneText = document.getElementById('milestone-text');
+
+        // Couple Modal Elements
+        const coupleModal = document.getElementById('couple-modal');
+        const createCoupleBtn = document.getElementById('create-couple-btn');
+        const joinCoupleBtn = document.getElementById('join-couple-btn');
+        const coupleIdInput = document.getElementById('couple-id-input');
+        const modalError = document.getElementById('modal-error');
+        const closeModalBtn = document.getElementById('close-modal-btn');
+
+        // Data for personalized features
+        const greetings = [
+            "Good Morning, Love!",
+            "Tum hi ho meri zindagi!",
+            "Tumhare saath har pal special hai.",
+            "Aaj ka din tumhare liye hai.",
+            "Muskurate raho, tum bahut khubsurat lagti ho."
+        ];
+        
+        const loveQuotes = [
+            "Pyar woh hai jab dusre ki khushi tumhari khushi ban jaati hai.",
+            "Dil ka rishta sabse gehra hota hai.",
+            "Har subah tumhare naam se shuru hoti hai.",
+            "Pyaar do aatmaon ka milan hai.",
+            "Tum mere ho, aur mai tumhara, isme koi shaq nahi."
+        ];
+        
+        const staticMilestones = [
+            { id: 'surprise_date', text: 'Plan a surprise date' },
+            { id: 'cook_meal', text: 'Cook a meal together' },
+            { id: 'new_restaurant', text: 'Dinner at a new restaurant' },
+            { id: 'watch_sunset', text: 'Watch the sunset together' },
+            { id: 'road_trip', text: 'Go on a road trip' }
+        ];
+
+        // Function to handle authentication and Firestore setup
+        async function setupApp() {
+            try {
+                if (initialAuthToken) {
+                    await signInWithCustomToken(auth, initialAuthToken);
+                } else {
+                    await signInAnonymously(auth);
+                }
+            } catch (error) {
+                console.error("Firebase Auth Error:", error);
+            }
+
+            onAuthStateChanged(auth, async (user) => {
+                if (user) {
+                    userId = user.uid;
+                    userIdDisplay.textContent = userId;
+                    console.log('User signed in with ID:', userId);
+                    await loadCoupleInfo();
+                } else {
+                    console.log('No user signed in.');
+                    userIdDisplay.textContent = "Not Signed In";
+                }
+            });
+        }
+
+        async function loadCoupleInfo() {
+            const userProfileRef = doc(db, 'artifacts', appId, 'users', userId, 'profile', 'data');
+            const docSnap = await getDoc(userProfileRef);
+            if (docSnap.exists() && docSnap.data().coupleId) {
+                coupleId = docSnap.data().coupleId;
+                coupleInfoEl.textContent = `Aapki Couple ID: ${coupleId}`;
+                coupleInfoEl.classList.remove('text-purple-600', 'bg-purple-100');
+                coupleInfoEl.classList.add('text-pink-600', 'bg-pink-100');
+                initializeListeners();
+            } else {
+                coupleInfoEl.textContent = 'Aapne abhi tak couple ID nahi banayi hai';
+                coupleInfoEl.classList.remove('text-pink-600', 'bg-pink-100');
+                coupleInfoEl.classList.add('text-purple-600', 'bg-purple-100');
+                showCoupleModal();
+            }
+        }
+        
+        function showCoupleModal() {
+            coupleModal.style.display = 'flex';
+        }
+
+        function hideCoupleModal() {
+            coupleModal.style.display = 'none';
+        }
+
+        async function createCouple() {
+            const newCoupleId = crypto.randomUUID();
+            const couplesRef = doc(db, 'artifacts', appId, 'public', 'couples', newCoupleId);
+            try {
+                await setDoc(couplesRef, { createdAt: new Date(), partner1: userId });
+                await updateProfileWithCoupleId(newCoupleId);
+            } catch (error) {
+                modalError.textContent = 'Couple ID banane mein dikkat aayi. Koshish karein.';
+                modalError.style.display = 'block';
+                console.error("Error creating couple:", error);
+            }
+        }
+
+        async function joinCouple() {
+            const idToJoin = coupleIdInput.value.trim();
+            if (!idToJoin) {
+                modalError.textContent = 'Couple ID daalein.';
+                modalError.style.display = 'block';
+                return;
+            }
+            const couplesRef = doc(db, 'artifacts', appId, 'public', 'couples', idToJoin);
+            const docSnap = await getDoc(couplesRef);
+            if (docSnap.exists()) {
+                await updateProfileWithCoupleId(idToJoin);
+            } else {
+                modalError.textContent = 'Couple ID galat hai ya maujood nahi hai.';
+                modalError.style.display = 'block';
+            }
+        }
+
+        async function updateProfileWithCoupleId(newCoupleId) {
+            const userProfileRef = doc(db, 'artifacts', appId, 'users', userId, 'profile', 'data');
+            await setDoc(userProfileRef, { coupleId: newCoupleId }, { merge: true });
+            coupleId = newCoupleId;
+            coupleInfoEl.textContent = `Aapki Couple ID: ${coupleId}`;
+            coupleInfoEl.classList.remove('text-purple-600', 'bg-purple-100');
+            coupleInfoEl.classList.add('text-pink-600', 'bg-pink-100');
+            hideCoupleModal();
+            initializeListeners();
+        }
+        
+        // Show a random daily greeting
+        function showDailyGreeting() {
+            const randomIndex = Math.floor(Math.random() * greetings.length);
+            dailyGreetingEl.textContent = greetings[randomIndex];
+        }
+
+        // Show a random love quote
+        function showDailyQuote() {
+            const randomIndex = Math.floor(Math.random() * loveQuotes.length);
+            dailyQuoteEl.textContent = `"${loveQuotes[randomIndex]}"`;
+        }
+
+        // Initialize Firestore listeners
+        function initializeListeners() {
+            // Check if coupleId is set, otherwise default to a private path (though modal should prevent this state)
+            const basePath = coupleId ? `artifacts/${appId}/public/data/memories/${coupleId}` : `artifacts/${appId}/users/${userId}`;
+
+            // Listen for memories in real-time
+            const memoriesRef = collection(db, basePath, 'memories');
+            onSnapshot(memoriesRef, (snapshot) => {
+                const memories = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                displayMemories(memories);
+            });
+
+            // Listen for special dates in real-time
+            const datesRef = collection(db, basePath, 'special_dates');
+            onSnapshot(datesRef, (snapshot) => {
+                const dates = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                displaySpecialDates(dates);
+            });
+
+            // Listen for all milestones and completed milestones in real-time
+            const milestonesRef = collection(db, basePath, 'milestones_list');
+            const completedRef = collection(db, basePath, 'completed_milestones');
+
+            onSnapshot(milestonesRef, (milestonesSnapshot) => {
+                const customMilestones = milestonesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                onSnapshot(completedRef, (completedSnapshot) => {
+                    const completedMilestoneIds = completedSnapshot.docs.map(doc => doc.id);
+                    displayMilestones(customMilestones, completedMilestoneIds);
+                });
+            });
+        }
+
+        // Function to display memories on the timeline
+        function displayMemories(memories) {
+            timelineEl.innerHTML = '';
+            if (memories.length === 0) {
+                timelineEl.appendChild(timelinePlaceholder);
+                return;
+            }
+
+            // Sort memories by date in descending order
+            memories.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            memories.forEach(memory => {
+                const item = document.createElement('div');
+                item.className = 'timeline-item';
+
+                const locationHtml = memory.location ? `<div class="flex items-center gap-1 text-gray-500"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 text-purple-500"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 6.64-7.5 11.25-7.5 11.25S4.5 17.14 4.5 10.5a7.5 7.5 0 1 1 15 0Z" /></svg><p class="text-sm">${memory.location}</p></div>` : '';
+
+                item.innerHTML = `
+                    <div class="timeline-item-dot"></div>
+                    <div class="flex items-center gap-2 mb-1 text-gray-500">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 text-pink-500">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5m-9-6h.008v.008H12v-.008Z" />
+                        </svg>
+                        <p class="text-sm">${memory.date}</p>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-1 text-gray-800">${memory.title}</h3>
+                    <p class="text-gray-600">${memory.notes}</p>
+                    ${locationHtml}
+                `;
+                timelineEl.appendChild(item);
+            });
+        }
+
+        // Function to display special dates
+        function displaySpecialDates(dates) {
+            specialDatesEl.innerHTML = '';
+            if (dates.length === 0) {
+                specialDatesEl.appendChild(datesPlaceholder);
+                return;
+            }
+
+            dates.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+            dates.forEach(date => {
+                const item = document.createElement('li');
+                item.className = 'text-gray-600 mb-2';
+                item.innerHTML = `
+                    <p class="font-semibold text-gray-800">${date.title}</p>
+                    <p class="text-sm text-gray-500">${date.date}</p>
+                `;
+                specialDatesEl.appendChild(item);
+            });
+        }
+
+        // Function to display milestones
+        function displayMilestones(customMilestones, completedMilestoneIds) {
+            milestoneList.innerHTML = '';
+            
+            const allMilestones = [
+                ...staticMilestones,
+                ...customMilestones
+            ];
+
+            if (allMilestones.length === 0) {
+                 milestoneList.appendChild(milestonesPlaceholder);
+                 return;
+            }
+            
+            allMilestones.forEach(milestone => {
+                const isCompleted = completedMilestoneIds.includes(milestone.id);
+                const isCustom = 'text' in milestone && !staticMilestones.some(m => m.id === milestone.id);
+                const item = document.createElement('div');
+                item.className = `milestone-item ${isCompleted ? 'completed' : ''} ${isCustom ? 'custom' : ''}`;
+                item.dataset.milestoneId = milestone.id;
+
+                const iconHtml = isCustom ? '⭐' : '';
+
+                item.innerHTML = `
+                    <span class="flex items-center gap-2">${iconHtml} ${milestone.text}</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-500 ${isCompleted ? '' : 'hidden'}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                `;
+                item.addEventListener('click', () => toggleMilestone(milestone.id));
+                milestoneList.appendChild(item);
+            });
+        }
+        
+        // Function to toggle a milestone's completed status
+        async function toggleMilestone(milestoneId) {
+            if (!coupleId) {
+                console.error("Couple ID nahi hai. Milestone save nahi hoga.");
+                return;
+            }
+            
+            const completedRef = collection(db, 'artifacts', appId, 'public', 'data', 'memories', coupleId, 'completed_milestones');
+            const docRef = doc(completedRef, milestoneId);
+            const docSnap = await getDoc(docRef);
+
+            if (docSnap.exists()) {
+                 await deleteDoc(docRef);
+                 console.log(`Milestone ${milestoneId} un-marked as completed.`);
+            } else {
+                 await setDoc(docRef, {});
+                 console.log(`Milestone ${milestoneId} marked as completed.`);
+            }
+        }
+        
+        // Handle Add Memory Form Submission
+        addMemoryForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (!coupleId) {
+                console.error("Couple ID nahi hai. Memory save nahi hogi.");
+                return;
+            }
+
+            const title = document.getElementById('memory-title').value;
+            const date = document.getElementById('memory-date').value;
+            const notes = document.getElementById('memory-notes').value;
+            const location = document.getElementById('memory-location').value;
+            
+            const newMemory = {
+                title,
+                date,
+                notes,
+                location,
+                createdAt: new Date(),
+                userId
+            };
+
+            try {
+                const memoriesRef = collection(db, 'artifacts', appId, 'public', 'data', 'memories', coupleId, 'memories');
+                await addDoc(memoriesRef, newMemory);
+                addMemoryForm.reset();
+                console.log("New memory added!");
+            } catch (error) {
+                console.error("Error adding memory:", error);
+            }
+        });
+
+        // Handle Add Special Date Form Submission
+        addDateForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (!coupleId) {
+                console.error("Couple ID nahi hai. Date save nahi hogi.");
+                return;
+            }
+
+            const title = document.getElementById('date-title').value;
+            const date = document.getElementById('date-date').value;
+
+            const newDate = {
+                title,
+                date,
+                userId
+            };
+
+            try {
+                const datesRef = collection(db, 'artifacts', appId, 'public', 'data', 'memories', coupleId, 'special_dates');
+                await addDoc(datesRef, newDate);
+                addDateForm.reset();
+                console.log("New special date added!");
+            } catch (error) {
+                console.error("Error adding special date:", error);
+            }
+        });
+
+        // Handle Add Custom Milestone Form Submission
+        addMilestoneForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (!coupleId) {
+                console.error("Couple ID nahi hai. Milestone save nahi hoga.");
+                return;
+            }
+            const milestoneTextValue = milestoneText.value.trim();
+            if (!milestoneTextValue) return;
+
+            const newMilestone = {
+                text: milestoneTextValue,
+                createdAt: new Date()
+            };
+
+            try {
+                const milestonesRef = collection(db, 'artifacts', appId, 'public', 'data', 'memories', coupleId, 'milestones_list');
+                await addDoc(milestonesRef, newMilestone);
+                milestoneText.value = '';
+                console.log("Custom milestone added!");
+            } catch (error) {
+                console.error("Error adding custom milestone:", error);
+            }
+        });
+        
+        // Event Listeners for the UI
+        startJourneyBtn.addEventListener('click', () => {
+            homeScreen.classList.add('opacity-0');
+            setTimeout(() => {
+                homeScreen.classList.add('hidden');
+                mainApp.classList.remove('hidden');
+            }, 500);
+        });
+
+        manageCoupleBtn.addEventListener('click', () => {
+            showCoupleModal();
+        });
+
+        createCoupleBtn.addEventListener('click', createCouple);
+        joinCoupleBtn.addEventListener('click', joinCouple);
+        closeModalBtn.addEventListener('click', hideCoupleModal);
+
+        updateLocationBtn.addEventListener('click', () => {
+             const locations = ['Delhi, India', 'Mumbai, India', 'New York, USA', 'Paris, France'];
+             const randomIndex = Math.floor(Math.random() * locations.length);
+             liveLocationEl.textContent = `Simulated Location: ${locations[randomIndex]}`;
+        });
+
+        window.onload = () => {
+            setupApp();
+            showDailyGreeting();
+            showDailyQuote();
+        };
+
+    </script>
+</body>
+</html>
